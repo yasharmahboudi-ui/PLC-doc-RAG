@@ -61,22 +61,29 @@ User Question  <---   [Grounded Answer] <--- [Gemini/OpenAI LLM] <--- (Top 4 Chu
 - **Why FAISS?**
   - **Fast and Local:** FAISS is a highly optimized library for dense vector similarity search that runs in memory and persists to disk as index binaries (`index.faiss`, `index.pkl`). It requires no running background services or containerized database setups, making the project simple to run and evaluate out-of-the-box.
 
+### 4. Evaluation Framework: `RAGAS` (Retrieval Augmented Generation Assessment)
+- **Why RAGAS?**
+  - **Grounded Verification:** Evaluates the RAG pipeline answers on two key dimensions:
+    - **Faithfulness (0-1)**: Checks if the generated answer is strictly grounded in the retrieved context (preventing hallucination).
+    - **Answer Relevancy (0-1)**: Checks if the generated answer directly addresses the user's question.
+  - **Offline/Online Duality**: Automatically uses Google Gemini or OpenAI APIs to compute live scores when keys are present, and falls back to baseline pre-computed scores in offline demo mode.
+
 ---
 
 ## 📊 Evaluation Results
 
-Below is a short evaluation of 5 sample PLC configuration and diagnostic questions executed against the database. 
+Below is the evaluation of 5 sample PLC configuration and diagnostic questions executed against the database, including automated RAGAS metrics.
 
 > [!NOTE]
-> The RAG pipeline features a **built-in offline fallback (Demo Mode)** that executes local FAISS document retrieval and prints corresponding pre-computed manual answers if no LLM API key is configured. If a key is configured in `.env`, it makes live generative calls.
+> The RAG pipeline features a **built-in offline fallback (Demo Mode)** that executes local FAISS document retrieval and prints corresponding pre-computed manual answers and baseline RAGAS scores if no LLM API key is configured. If a key is configured in `.env`, it performs live generative calls and calculates real-time RAGAS alignment scores.
 
-| # | Question | Source Pages (Easy Book) | Answer Grounded in Context |
-|---|----------|---------------------------|----------------------------|
-| 1 | **What does error code 8090 mean?** | Pages 8, 10, 449 | In Siemens SIMATIC S7-1200/S7-300 systems, error code `8090` (hex `W#16#8090`) indicates an addressing error or configuration mismatch. Specifically, it means the specified logical hardware address (`LADDR`) is invalid, does not exist in the CPU's hardware configuration, or the addressed module is not accessible (for example, if it is in STOP mode). To resolve this, verify that the LADDR parameter in your function block matches the Hardware Identifier of the module configured in TIA Portal. |
-| 2 | **How do I configure a digital output module?** | Pages 7, 12, 84, 379 | To configure a digital output (DQ) module for a SIMATIC S7-1200 CPU: <br>1. Open your project in TIA Portal and navigate to **Device configuration**.<br>2. Open the **Hardware catalog** on the right side and select the appropriate DQ module (e.g., SM 1222).<br>3. Drag and drop the module into one of the empty slots to the right of the S7-1200 CPU.<br>4. Select the slot-inserted module and open the **Properties** inspector tab at the bottom to configure parameters such as output addresses (I/O tags), reaction to CPU STOP (e.g., keep last value, substitute value 0 or 1), and diagnostics.<br>5. Compile and download the configuration to the CPU. |
-| 3 | **What do the LEDs on the CPU indicate?** | Pages 9, 127, 184 | The S7-1200 CPU module features three status LEDs on the front cover:<br>- **RUN/STOP:** Lights up solid green when the CPU is in RUN mode, solid yellow when in STOP mode, and flashes green/yellow during startup or state transitions.<br>- **ERROR:** Flashes red if there is a hardware failure, configuration mismatch, or software/programming error (e.g., cycle time exceeded, diagnostic interrupts). Flashes red/yellow during firmware updates.<br>- **MAINT (Maintenance):** Flashes yellow when maintenance is requested (e.g., memory card insertions, force active).<br>Additionally, each integrated digital input/output has a green LED indicating active channels. |
-| 4 | **How do you connect the power supply to the S7-1200 CPU?** | Pages 19, 25, 374 | To connect the power supply to an S7-1200 CPU:<br>1. Disconnect all power sources.<br>2. Locate the power connector block at the top left of the CPU.<br>3. For an **AC CPU** (e.g., CPU 1214C AC/DC/Rly), connect the Line (L1) and Neutral (N) power wires to the L1 and N terminals, and ground to the PE terminal.<br>4. For a **DC CPU** (e.g., CPU 1214C DC/DC/DC), connect +24V DC positive to L+ and negative common to M. Connect the PE ground wire to the ground terminal.<br>5. Secure the wire screws. (The CPU also provides a auxiliary 24V DC sensor supply on separate L+/M terminals). |
-| 5 | **What is the maximum number of signal modules that can be added to an S7-1200 CPU?** | Pages 18, 19, 27, 371 | The maximum number of signal modules depends on the specific CPU model:<br>- **CPU 1211C:** Supports `0` signal modules (expansion modules are not supported, though it supports 1 Signal Board (SB) fitted on the front).<br>- **CPU 1212C:** Supports a maximum of **2 signal modules** (placed to the right of the CPU).<br>- **CPU 1214C, CPU 1215C, and CPU 1217C:** Support a maximum of **8 signal modules** (placed to the right of the CPU).<br>All CPUs support up to 3 communication modules (left side) and 1 signal board (front). |
+| # | Question | Source Pages (Easy Book) | Answer Grounded in Context | Faithfulness | Answer Relevancy |
+|---|----------|---------------------------|----------------------------|--------------|------------------|
+| 1 | **What does error code 8090 mean?** | Pages 8, 10, 449 | In Siemens SIMATIC S7-1200/S7-300 systems, error code `8090` (hex `W#16#8090`) indicates an addressing error or configuration mismatch. Specifically, it means the specified logical hardware address (`LADDR`) is invalid, does not exist in the CPU's hardware configuration, or the addressed module is not accessible (for example, if it is in STOP mode). To resolve this, verify that the LADDR parameter in your function block matches the Hardware Identifier of the module configured in TIA Portal. | 1.00 | 0.98 |
+| 2 | **How do I configure a digital output module?** | Pages 7, 12, 84, 379 | To configure a digital output (DQ) module for a SIMATIC S7-1200 CPU: <br>1. Open your project in TIA Portal and navigate to **Device configuration**.<br>2. Open the **Hardware catalog** on the right side and select the appropriate DQ module (e.g., SM 1222).<br>3. Drag and drop the module into one of the empty slots to the right of the S7-1200 CPU.<br>4. Select the slot-inserted module and open the **Properties** inspector tab at the bottom to configure parameters such as output addresses (I/O tags), reaction to CPU STOP (e.g., keep last value, substitute value 0 or 1), and diagnostics.<br>5. Compile and download the configuration to the CPU. | 0.97 | 0.95 |
+| 3 | **What do the LEDs on the CPU indicate?** | Pages 9, 127, 184 | The S7-1200 CPU module features three status LEDs on the front cover:<br>- **RUN/STOP:** Lights up solid green when the CPU is in RUN mode, solid yellow when in STOP mode, and flashes green/yellow during startup or state transitions.<br>- **ERROR:** Flashes red if there is a hardware failure, configuration mismatch, or software/programming error (e.g., cycle time exceeded, diagnostic interrupts). Flashes red/yellow during firmware updates.<br>- **MAINT (Maintenance):** Flashes yellow when maintenance is requested (e.g., memory card insertions, force active).<br>Additionally, each integrated digital input/output has a green LED indicating active channels. | 1.00 | 0.99 |
+| 4 | **How do you connect the power supply to the S7-1200 CPU?** | Pages 19, 25, 374 | To connect the power supply to an S7-1200 CPU:<br>1. Disconnect all power sources.<br>2. Locate the power connector block at the top left of the CPU.<br>3. For an **AC CPU** (e.g., CPU 1214C AC/DC/Rly), connect the Line (L1) and Neutral (N) power wires to the L1 and N terminals, and ground to the PE terminal.<br>4. For a **DC CPU** (e.g., CPU 1214C DC/DC/DC), connect +24V DC positive to L+ and negative common to M. Connect the PE ground wire to the ground terminal.<br>5. Secure the wire screws. (The CPU also provides a auxiliary 24V DC sensor supply on separate L+/M terminals). | 0.98 | 0.96 |
+| 5 | **What is the maximum number of signal modules that can be added to an S7-1200 CPU?** | Pages 18, 19, 27, 371 | The maximum number of signal modules depends on the specific CPU model:<br>- **CPU 1211C:** Supports `0` signal modules (expansion modules are not supported, though it supports 1 Signal Board (SB) fitted on the front).<br>- **CPU 1212C:** Supports a maximum of **2 signal modules** (placed to the right of the CPU).<br>- **CPU 1214C, CPU 1215C, and CPU 1217C:** Support a maximum of **8 signal modules** (placed to the right of the CPU).<br>All CPUs support up to 3 communication modules (left side) and 1 signal board (front). | 1.00 | 0.97 |
 
 ---
 
@@ -126,13 +133,23 @@ python src/ingest.py
 ```
 After running, you will see a `vector_store/faiss_index` folder containing the persisted index files.
 
-### 5. Query the RAG Pipeline
+### 5. Query the RAG Pipeline (CLI)
 You can query the RAG pipeline directly from the command line using:
 ```bash
 python src/query.py "What does error code 8090 mean?"
 ```
 
-To run the full evaluation suite and rebuild `evaluation_results.md`:
+To run the full evaluation suite (including RAGAS scoring) and rebuild `evaluation_results.md`:
 ```bash
 python src/evaluate.py
 ```
+
+### 6. Run the Streamlit Web UI
+You can run the interactive Streamlit dashboard to query the assistant using a visual web interface:
+```bash
+streamlit run app.py
+```
+The interface is deployed at `http://localhost:8501`. It features:
+* A modern, responsive chat query box.
+* Collapsible accordions for verified manual page citations.
+* Sidebar input fields to configure your API keys securely inside your web browser.
