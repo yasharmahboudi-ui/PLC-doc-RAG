@@ -1,6 +1,8 @@
 # Domain-Specific RAG over PLC Documentation (plc-doc-rag)
 
-This repository contains a production-ready, domain-specific Retrieval-Augmented Generation (RAG) pipeline designed to query Siemens SIMATIC S7 PLC manuals. It extracts information from Siemens documentation and generates precise, factually grounded answers to configuration and troubleshooting questions in natural language.
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://plc-doc-rag-dcmxtrmtjay76trhq7ftz3.streamlit.app/)
+
+This repository contains a production-ready, domain-specific RAG (Retrieval-Augmented Generation) pipeline designed to query Siemens SIMATIC S7 PLC manuals. It extracts information from Siemens documentation and generates precise, factually grounded answers to configuration and troubleshooting questions in natural language.
 
 ---
 
