@@ -54,7 +54,7 @@ st.markdown("""
         margin-bottom: 5px;
     }
 </style>
-""", unsafe_style=True)
+""", unsafe_allow_html=True)
 
 # Sidebar UI
 with st.sidebar:
@@ -96,8 +96,8 @@ with st.sidebar:
     """)
 
 # Main Content UI
-st.markdown("<h1 class='main-title'>⚡ Siemens SIMATIC S7-1200 RAG Assistant</h1>", unsafe_style=True)
-st.markdown("<p class='subtitle'>Semantic search and QA assistant grounded in official Siemens documentation</p>", unsafe_style=True)
+st.markdown("<h1 class='main-title'>⚡ Siemens SIMATIC S7-1200 RAG Assistant</h1>", unsafe_allow_html=True)
+st.markdown("<p class='subtitle'>Semantic search and QA assistant grounded in official Siemens documentation</p>", unsafe_allow_html=True)
 
 # Status indicators
 has_gemini = bool(os.getenv("GEMINI_API_KEY"))
@@ -139,7 +139,7 @@ if selected_query:
         
     if result:
         st.markdown("#### 🤖 Assistant Answer:")
-        st.markdown(f"<div class='answer-card'>{result['answer']}</div>", unsafe_style=True)
+        st.markdown(f"<div class='answer-card'>{result['answer']}</div>", unsafe_allow_html=True)
         
         st.markdown("#### 📖 Referenced Document Contexts:")
         for idx, doc in enumerate(result['context'], 1):
