@@ -72,5 +72,4 @@ env/
 
 # Project-specific paths
 data/
-vector_store/
 .env
